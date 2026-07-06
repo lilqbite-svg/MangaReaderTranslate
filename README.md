@@ -1,5 +1,7 @@
 # MangaReaderTranslate
 
+*[Читать на русском](RU_README.md)*
+
 A free, fully local/offline manga translator for Windows. Point it at a manga
 page (or a whole folder, or a `.cbz`), pick a source and target language, and
 it detects the text in every speech bubble, translates it, erases the
