@@ -29,7 +29,7 @@ def main() -> None:
 
     out_path = args.out or args.image.with_name(f"{args.image.stem}_translated{args.image.suffix}")
 
-    pipeline = Pipeline(device=args.device)
+    pipeline = Pipeline(device=args.device, status_callback=print)
     result = pipeline.process_page(args.image, args.src, args.tgt)
 
     Image.fromarray(result.output_image).save(out_path)

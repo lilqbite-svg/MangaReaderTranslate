@@ -44,7 +44,11 @@ class TranslationWorker(QObject):
     def run(self) -> None:
         try:
             self.status.emit("Loading models (first run may take a while)...")
-            pipeline = Pipeline(device=self._device, ocr_backend_overrides=self._ocr_backend_overrides)
+            pipeline = Pipeline(
+                device=self._device,
+                ocr_backend_overrides=self._ocr_backend_overrides,
+                status_callback=self.status.emit,
+            )
             self.pipeline = pipeline
         except Exception as exc:  # model load failure shouldn't crash the UI thread
             self.error.emit(-1, f"Failed to load models: {exc}")

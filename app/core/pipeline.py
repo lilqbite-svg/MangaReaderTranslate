@@ -18,9 +18,8 @@ from app.core.ocr import OcrEngine
 from app.core.renderer import draw_translated_text
 from app.core.translator import NLLBTranslator
 from app.core.types import PageResult
-from app.models.manager import CACHE_ROOT, ModelManager
-
-NLLB_CT2_DIR = CACHE_ROOT / "translate" / "nllb-200-distilled-600M-ct2"
+from app.models.manager import ModelManager
+from app.models.nllb_setup import StatusCallback, ensure_nllb_ct2
 
 
 class Pipeline:
@@ -28,34 +27,16 @@ class Pipeline:
     single page. This is the one seam the CLI, tests, and (later) the Qt UI
     all call into."""
 
-    def __init__(self, device: str = "auto", ocr_backend_overrides: dict[str, str] | None = None) -> None:
-        if not NLLB_CT2_DIR.exists():
-            import os
-            import sys
-
-            parent = NLLB_CT2_DIR.parent
-            local_appdata = os.environ.get("LOCALAPPDATA", "")
-            try:
-                appdata_listing = os.listdir(local_appdata) if local_appdata else "N/A"
-            except Exception as list_exc:
-                appdata_listing = f"<listdir failed: {list_exc!r}>"
-            debug = (
-                f"NLLB_CT2_DIR={NLLB_CT2_DIR!r} pathlib.exists={NLLB_CT2_DIR.exists()} "
-                f"os.path.exists={os.path.exists(str(NLLB_CT2_DIR))}\n"
-                f"CACHE_ROOT={CACHE_ROOT!r} exists={CACHE_ROOT.exists()}\n"
-                f"parent={parent!r} exists={parent.exists()} "
-                f"contents={list(parent.iterdir()) if parent.exists() else 'N/A'}\n"
-                f"LOCALAPPDATA={local_appdata!r}\n"
-                f"listdir(LOCALAPPDATA) has 'MangaReaderTranslate'? "
-                f"{'MangaReaderTranslate' in appdata_listing if isinstance(appdata_listing, list) else appdata_listing}\n"
-                f"full listdir(LOCALAPPDATA)={appdata_listing}\n"
-                f"sys.frozen={getattr(sys, 'frozen', False)} sys.prefix={sys.prefix!r} "
-                f"sys.executable={sys.executable!r}"
-            )
-            raise RuntimeError(
-                f"NLLB CTranslate2 model not found at {NLLB_CT2_DIR}. "
-                "Run `python scripts/convert_nllb_to_ct2.py` first.\n\n" + debug
-            )
+    def __init__(
+        self,
+        device: str = "auto",
+        ocr_backend_overrides: dict[str, str] | None = None,
+        status_callback: StatusCallback | None = None,
+    ) -> None:
+        # First run only: downloads + converts the NLLB translation model
+        # (~2.4GB) so a fresh checkout works without any manual setup step -
+        # later calls just confirm the cached conversion is already there.
+        nllb_ct2_dir = ensure_nllb_ct2(status_callback)
 
         manager = ModelManager()
         detector_path = manager.ensure("comic_text_detector")
@@ -63,7 +44,7 @@ class Pipeline:
 
         self.detector = ComicTextDetector(detector_path, device=device)
         self.ocr = OcrEngine(backend_overrides=ocr_backend_overrides)
-        self.translator = NLLBTranslator(NLLB_CT2_DIR, device=device)
+        self.translator = NLLBTranslator(nllb_ct2_dir, device=device)
         # Forced to CPU regardless of the device setting: text is always
         # rendered in black, so a GPU inference glitch that silently returns
         # garbage/near-zero pixels here (no exception - the ONNX session call
