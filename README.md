@@ -64,6 +64,33 @@ without any extra configuration if not.
 - **Export** the finished pages as plain images or repackage them straight
   into a new `.cbz`.
 
+## System requirements
+
+Not a lightweight app — budget disk space for the ML models plus either a
+venv or the packaged exe.
+
+|  | Minimum | Recommended |
+|---|---|---|
+| OS | Windows 10/11 (64-bit) | Windows 10/11 (64-bit) |
+| Python (from source) | 3.11 | 3.11 |
+| CPU | Any 64-bit, 4 cores | 4+ cores, last ~5-6 years |
+| RAM | 8 GB | 16 GB |
+| GPU | None — runs on CPU | NVIDIA, 4+ GB VRAM |
+| Free disk space | ~9-10 GB | ~15 GB (SSD) |
+
+Notes:
+
+- **Disk breakdown**: the models (detector + inpainting + NLLB + manga-ocr +
+  RapidOCR) come to roughly **3.5-4GB** total. On top of that you need either
+  a Python venv (**~4.7GB**, running from source) or the packaged `.exe`
+  folder (**~4.9GB**) — not both, pick one setup.
+- **GPU is optional, NVIDIA-only**: AMD/Intel GPUs simply fall back to CPU
+  automatically — still fully functional, just slower per page. See [GPU
+  acceleration](#gpu-acceleration) below for what very new (Blackwell /
+  RTX 50-series) cards need beyond a normal driver install.
+- **SSD recommended**: models get loaded into memory on every launch, and
+  that's noticeably slower off a spinning HDD.
+
 ## Quick start
 
 Requires **Python 3.11** specifically (the ML dependencies below don't yet
