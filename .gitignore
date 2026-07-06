@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Build artifacts (PyInstaller) - dist/ in particular is multi-GB
+build/
+dist/
+
+# Editor/IDE
+.vscode/
+.idea/
+.claude/
+
+# OS cruft
+Thumbs.db
+.DS_Store
+
+# Runtime output / scratch - not source, shouldn't be committed
+out.png
+*_translated.*
+debug_*.log
+*.tmp
+
+# Model cache should never live in the repo (it's %LOCALAPPDATA% at runtime,
+# but guard against it ending up here by accident, e.g. a misconfigured path)
+MRTranslateCache/
